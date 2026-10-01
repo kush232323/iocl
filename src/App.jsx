@@ -188,7 +188,7 @@ const App = () => {
           {/* Logo */}
           <div className="p-4 border-b border-gray-700 flex items-center justify-between">
             {sidebarOpen ? (
-              <span className="font-bold text-lg">School ERP</span>
+              <span className="font-bold text-lg">IOCL</span>
             ) : (
               <span className="font-bold text-lg">📚</span>
             )}
