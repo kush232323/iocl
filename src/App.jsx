@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { HashRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import Login from './components/Login';
 import EarthPitTest from './components/electrical/EarthPitTest';
 import ThermalOverloadRelayTesting from './components/electrical/ThermalOverloadRelayTesting';
 import MotorMeggerTest from './components/electrical/MotorMeggerTest';
 
 const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTopMenu, setActiveTopMenu] = useState('dashboard');
@@ -14,6 +17,28 @@ const App = () => {
     electrical: false
   });
 
+  // Check auth on mount
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const savedUser = localStorage.getItem('user');
+    if (token && savedUser) {
+      setIsAuthenticated(true);
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+    setUser(null);
+  };
+
   const toggleSubMenu = (menu) => {
     setOpenSubMenus(prev => ({
       ...prev,
@@ -21,13 +46,21 @@ const App = () => {
     }));
   };
 
-  // Top Menus - Dashboard and Electrical
+  // =============================================
+  // IF NOT AUTHENTICATED, SHOW LOGIN PAGE
+  // =============================================
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  // =============================================
+  // AUTHENTICATED APP
+  // =============================================
   const topMenus = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'electrical', label: 'Electrical', icon: '⚡' }
   ];
 
-  // Menu Data with sub-menus
   const menuData = {
     dashboard: [
       { id: 'dashboard-main', label: 'Main Dashboard', icon: '📊' },
@@ -66,27 +99,21 @@ const App = () => {
   };
 
   const renderContent = () => {
-    // Earth Pit Test
     if (activeSubMenu === 'earth-pit-test') {
-      return <EarthPitTest />;
+      return <EarthPitTest user={user} />;
     }
-
-    // Thermal Overload Relay Testing
     if (activeSubMenu === 'thermal-overload-relay') {
-      return <ThermalOverloadRelayTesting />;
+      return <ThermalOverloadRelayTesting user={user} />;
     }
-
-    // Motor Megger Test
     if (activeSubMenu === 'motor-megger-test') {
-      return <MotorMeggerTest />;
+      return <MotorMeggerTest user={user} />;
     }
 
-    // Default content for other menus
     return (
       <div className="p-6">
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <h1 className="text-6xl md:text-8xl font-bold text-blue-600 animate-pulse">
-            Hello World!
+            IOCL
           </h1>
           <p className="text-lg text-gray-500 mt-4">
             Selected: {activeSubMenu}
@@ -96,7 +123,6 @@ const App = () => {
     );
   };
 
-  // Sidebar render function with sub-menus
   const renderSidebarItems = () => {
     const items = menuData[activeTopMenu] || [];
     
@@ -219,16 +245,28 @@ const App = () => {
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">👤</div>
                   <div>
-                    <p className="text-sm font-semibold">Admin</p>
-                    <p className="text-xs text-gray-400">Super Admin</p>
+                    <p className="text-sm font-semibold">{user?.name || 'Admin'}</p>
+                    <p className="text-xs text-gray-400">{user?.role || 'Super Admin'}</p>
                   </div>
                 </div>
-                <button className="text-gray-400 hover:text-white">🚪</button>
+                <button 
+                  onClick={handleLogout}
+                  className="text-gray-400 hover:text-red-400 transition cursor-pointer"
+                  title="Logout"
+                >
+                  🚪
+                </button>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2">
                 <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">👤</div>
-                <button className="text-gray-400 hover:text-white">🚪</button>
+                <button 
+                  onClick={handleLogout}
+                  className="text-gray-400 hover:text-red-400 transition cursor-pointer"
+                  title="Logout"
+                >
+                  🚪
+                </button>
               </div>
             )}
           </div>
@@ -251,8 +289,14 @@ const App = () => {
                 </h2>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600 hidden md:block">👋 Welcome, Admin</span>
+                <span className="text-sm text-gray-600 hidden md:block">👋 Welcome, {user?.name || 'Admin'}</span>
                 <button className="text-gray-600 hover:text-gray-800">🔔</button>
+                <button 
+                  onClick={handleLogout}
+                  className="text-sm text-red-600 hover:text-red-800 font-medium cursor-pointer"
+                >
+                  Logout
+                </button>
               </div>
             </div>
 
@@ -269,7 +313,7 @@ const App = () => {
                         setActiveSubMenu(firstItem.id);
                       }
                     }}
-                    className={`px-4 py-2.5 text-sm font-medium transition-all whitespace-nowrap ${
+                    className={`px-4 py-2.5 text-sm font-medium transition-all whitespace-nowrap cursor-pointer ${
                       activeTopMenu === menu.id
                         ? 'text-blue-600 border-b-2 border-blue-600'
                         : 'text-gray-600 hover:text-gray-800 hover:border-b-2 hover:border-gray-300'
@@ -287,9 +331,9 @@ const App = () => {
           <div className="flex-1 overflow-y-auto">
             <Routes>
               <Route path="/" element={renderContent()} />
-              <Route path="/earth-pit-test" element={<EarthPitTest />} />
-              <Route path="/thermal-overload-relay" element={<ThermalOverloadRelayTesting />} />
-              <Route path="/motor-megger-test" element={<MotorMeggerTest />} />
+              <Route path="/earth-pit-test" element={<EarthPitTest user={user} />} />
+              <Route path="/thermal-overload-relay" element={<ThermalOverloadRelayTesting user={user} />} />
+              <Route path="/motor-megger-test" element={<MotorMeggerTest user={user} />} />
             </Routes>
           </div>
         </div>
