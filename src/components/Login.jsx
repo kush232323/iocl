@@ -80,7 +80,7 @@ const Login = ({ onLogin }) => {
             <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
               <span className="text-4xl">⚡</span>
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">School ERP</h1>
+            <h1 className="text-2xl font-bold text-white tracking-tight">IOCL</h1>
             <p className="text-blue-100 text-sm mt-1">Electrical Testing Management System</p>
           </div>
 
@@ -200,7 +200,7 @@ const Login = ({ onLogin }) => {
           {/* Footer */}
           <div className="bg-gray-50 px-8 py-4 border-t border-gray-100 text-center">
             <p className="text-xs text-gray-500">
-              © {new Date().getFullYear()} School ERP. All rights reserved.
+              © {new Date().getFullYear()} IOCL. All rights reserved.
             </p>
             <p className="text-xs text-gray-600 mt-1 font-semibold">
               Powered by: <span className="text-blue-700">ADCSD</span>
